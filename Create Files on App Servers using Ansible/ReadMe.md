@@ -9,9 +9,10 @@ d. Ensure the user/group owner of the /home/app.txt file.
 
 # Process:
 
-## 1. Create the Playbook
-Create an Ansible playbook (e.g., `playbook.yml`) with the necessary tasks and configurations that define actions like creating the file `/home/app.txt`, setting permissions, and ensuring ownership for each app server.
-## 2. Run the Playbook
+## 1. Create inventory file(e.g., `~/playbook/inventory`).
+## 2. Create the Playbook
+Create an Ansible playbook (e.g., `~/playbook/playbook.yml`) with the necessary tasks and configurations that define actions like creating the file `/home/app.txt`, setting permissions, and ensuring ownership for each app server.
+## 3. Run the Playbook
    ```bash
    ansible-playbook -i ~/playbook/inventory ~/playbook/playbook.yml
    ```
