@@ -1,0 +1,32 @@
+---
+- name: Create /home/app.txt file on all app servers
+  hosts: app_servers
+  become: yes
+  vars:
+    app_server_owners:
+      app_server1:
+        owner: app_server1-user
+        group: app_server1-user
+      app_server2:
+        owner: app_server2-user
+        group: app_server2-user
+      app_server3:
+        owner: app_server3-user
+        group: app_server3-user
+  tasks:
+    - name: Create the file /home/app.txt
+      file:
+        path: /home/app.txt
+        state: touch
+
+    - name: Set permissions of /home/app.txt to 0655
+      file:
+        path: /home/app.txt
+        mode: '0655'
+
+    - name: Set ownership based on server
+      file:
+        path: /home/app.txt
+        owner: "{{ app_server_owners[inventory_hostname].owner }}"
+        group: "{{ app_server_owners[inventory_hostname].group }}"
+      when: app_server_owners[inventory_hostname] is defined
