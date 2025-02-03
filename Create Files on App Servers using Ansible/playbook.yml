@@ -7,14 +7,10 @@
       file:
         path: /home/app.txt
         state: touch
-
-    - name: Set permissions of /home/app.txt to 0655
-      file:
-        path: /home/app.txt
         mode: '0655'
 
-    - name: Set ownership based on inventory file
+    - name: Set ownership based on ansible_user
       file:
         path: /home/app.txt
-        owner: "{{ hostvars[inventory_hostname].user }}"
-        group: "{{ hostvars[inventory_hostname].group }}"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
