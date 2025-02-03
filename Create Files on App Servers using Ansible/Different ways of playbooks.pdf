@@ -1,0 +1,134 @@
+# Option1:
+   ## Inventory file:
+      [app_servers]
+      app_server1 ansible_host=192.168.1.101
+      app_server2 ansible_host=192.168.1.102
+      app_server3 ansible_host=192.168.1.103
+## Playbook(hardcoded)
+    ---
+- name: Create /home/app.txt file on all app servers
+  hosts: app_servers
+  become: yes
+  tasks:
+    - name: Create the file /home/app.txt
+      file:
+        path: /home/app.txt
+        state: touch
+
+    - name: Set permissions of /home/app.txt to 0655
+      file:
+        path: /home/app.txt
+        mode: '0655'
+
+    - name: Set ownership for app_server1
+      file:
+        path: /home/app.txt
+        owner: tony
+        group: tony
+      when: inventory_hostname == 'app_server1'
+
+    - name: Set ownership for app_server2
+      file:
+        path: /home/app.txt
+        owner: steve
+        group: steve
+      when: inventory_hostname == 'app_server2'
+
+    - name: Set ownership for app_server3
+      file:
+        path: /home/app.txt
+        owner: banner
+        group: banner
+      when: inventory_hostname == 'app_server3'
+
+
+# Option2:
+   ## inventory file:
+        [app_servers]
+app_server1 ansible_host=192.168.1.101 user=tony group=tony
+app_server2 ansible_host=192.168.1.102 user=steve group=steve
+app_server3 ansible_host=192.168.1.103 user=banner group=banner
+ ## playbook:
+        ---
+- name: Create /home/app.txt file on all app servers
+  hosts: app_servers
+  become: yes
+  vars:
+    app_server_owners:
+      app_server1:
+        owner: tony
+        group: tony
+      app_server2:
+        owner: steve
+        group: steve
+      app_server3:
+        owner: banner
+        group: banner
+  tasks:
+    - name: Create the file /home/app.txt
+      file:
+        path: /home/app.txt
+        state: touch
+
+    - name: Set permissions of /home/app.txt to 0655
+      file:
+        path: /home/app.txt
+        mode: '0655'
+
+    - name: Set ownership based on server
+      file:
+        path: /home/app.txt
+        owner: "{{ app_server_owners[inventory_hostname].owner }}"
+        group: "{{ app_server_owners[inventory_hostname].group }}"
+      when: app_server_owners[inventory_hostname] is defined
+
+# Option3:
+  Playbook:
+      ---
+- name: Create /home/app.txt file on all app servers
+  hosts: app_servers
+  become: yes
+  tasks:
+    - name: Create the file /home/app.txt
+      file:
+        path: /home/app.txt
+        state: touch
+
+    - name: Set permissions of /home/app.txt to 0655
+      file:
+        path: /home/app.txt
+        mode: '0655'
+
+    - name: Set ownership based on inventory file
+      file:
+        path: /home/app.txt
+        owner: "{{ hostvars[inventory_hostname].user }}"
+        group: "{{ hostvars[inventory_hostname].group }}"
+
+# Option4:
+   ## Inventory:
+ 	[app_servers]
+app_server1 ansible_host=192.168.1.101 ansible_user=tony
+app_server2 ansible_host=192.168.1.102 ansible_user=steve
+app_server3 ansible_host=192.168.1.103 ansible_user=banner
+## Playbook:
+---
+- name: Create /home/app.txt file on all app servers
+  hosts: app_servers
+  become: yes
+  tasks:
+    - name: Create the file /home/app.txt
+      file:
+        path: /home/app.txt
+        state: touch
+
+    - name: Set permissions of /home/app.txt to 0655
+      file:
+        path: /home/app.txt
+        mode: '0655'
+
+    - name: Set ownership based on ansible_user
+      file:
+        path: /home/app.txt
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
