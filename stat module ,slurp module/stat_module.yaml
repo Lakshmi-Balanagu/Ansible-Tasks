@@ -1,0 +1,24 @@
+---
+- name: Verify Backup File and Process Contents
+  hosts: backup_servers
+  tasks:
+    - name: Check if backup file exists
+      stat:
+        path: /backups/myapp-backup.tar.gz
+      register: backup_stat
+
+    - name: Fetch backup content if it exists
+      slurp:
+        src: /backups/myapp-backup.tar.gz
+      register: backup_content
+      when: backup_stat.stat.exists
+
+    - name: Process the backup content
+      debug:
+        msg: "Backup file content successfully retrieved!"
+      when: backup_stat.stat.exists
+
+    - name: Notify if backup doesn't exist
+      debug:
+        msg: "Backup file does not exist, no action taken."
+      when: not backup_stat.stat.exists
