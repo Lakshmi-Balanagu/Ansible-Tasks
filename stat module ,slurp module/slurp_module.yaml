@@ -1,24 +1,24 @@
 ---
-- name: Verify Backup File and Process Contents
-  hosts: backup_servers
+- name: Fetch Log File and Check for Errors
+  hosts: webservers
   tasks:
-    - name: Check if backup file exists
-      stat:
-        path: /backups/myapp-backup.tar.gz
-      register: backup_stat
-
-    - name: Fetch backup content if it exists
+    - name: Slurp the error log file
       slurp:
-        src: /backups/myapp-backup.tar.gz
-      register: backup_content
-      when: backup_stat.stat.exists
+        src: /var/log/myapp/error.log
+      register: log_content
 
-    - name: Process the backup content
-      debug:
-        msg: "Backup file content successfully retrieved!"
-      when: backup_stat.stat.exists
+    - name: Decode the log content
+      set_fact:
+        decoded_log: "{{ log_content.content | b64decode }}"
 
-    - name: Notify if backup doesn't exist
+    - name: Check for specific error in the log
       debug:
-        msg: "Backup file does not exist, no action taken."
-      when: not backup_stat.stat.exists
+        msg: "Error found in log file!"
+      when: "'Critical error' in decoded_log"
+
+    - name: Send email if critical error is found
+      mail:
+        to: "admin@example.com"
+        subject: "Critical Error in Application Log"
+        body: "A critical error has been detected in the application logs."
+      when: "'Critical error' in decoded_log"
